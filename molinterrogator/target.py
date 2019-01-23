@@ -1,6 +1,6 @@
 from pandas import DataFrame as _pd_DataFrame
 
-_engines_name=['ChEMBL']
+_engines_name=['ChEMBL','UniProt']
 
 _target_df   = _pd_DataFrame( columns=['Name', 'Type', 'Organism', 'ChemBL', 'UniProt', 'BindingDB', 'IntAct',
                                        'InterPro', 'PDB'])
@@ -14,6 +14,7 @@ class Target():
 
         self._query_string = query
         self._chembl = _target_chembl_query(query)
+        self._uniprot = _target_uniprot_query(query)
         self.card = _target_df.copy()
 
         if len(self._chembl.query) > 1:
@@ -76,6 +77,8 @@ def _target_chembl_id_2_card_dict(chembl_id=None, client=None):
                 except:
                     tmp_dict['InterPro']=[id_db]
 
+        tmp_dict['BindingDB']=tmp_dict['UniProt']
+
         del(result)
 
         return tmp_dict
@@ -96,18 +99,54 @@ def _compound_from_target_chembl_2_card_dict(compound_result=None, client=None):
 
         return tmp_dict
 
+class _target_uniprot_query():
+
+    def __init__(self, query=None):
+
+        self.string = query
+        self.query = None
+        self.card = _target_df.copy()
+
+        self.run_query()
+        #self.update_results(index_result=0)
+
+    def run_query(self):
+
+        import urllib
+
+        url = 'http://www.uniprot.org/uniprot/'
+
+        params = {
+            'query':self.string,
+            'reviewed':'yes',
+            'format':'tab',
+            'sort':'score'
+        }
+
+        data = urllib.parse.urlencode(params)
+        request = urllib.request.Request(url, data)
+        print(request)
+        response = urllib.request.urlopen(request)
+
+        self.query = response
+
+        del(urllib, urllib2, data, url, request)
+
 class _target_chembl_query():
 
     def __init__(self, query=None):
 
-        from chembl_webresource_client.new_client import new_client
-
         self.string = query
-        self.query = new_client.target.filter(target_synonym__icontains=self.string)
+        self.query = None
         self.card = _target_df.copy()
 
+        self.run_query()
         self.update_results(index_result=0)
 
+    def run_query(self):
+
+        from chembl_webresource_client.new_client import new_client
+        self.query = new_client.target.filter(target_synonym__icontains=self.string)
         del(new_client)
 
     def info_results(self):
