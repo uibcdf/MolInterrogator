@@ -1,4 +1,4 @@
-# TargetInterrogator
+# MolInterrogator
 
 # What will be this?
 
@@ -17,7 +17,7 @@
 - 
 
 
-TargetInterrogator is the python wrapper or platform to get information of a given target from
+MolInterrogator is the python wrapper or platform to get information of a given target from
 databases and servers. This information should be realted with:
 
 - Set of reported compounds: IC50, Binding affinity, etc.
