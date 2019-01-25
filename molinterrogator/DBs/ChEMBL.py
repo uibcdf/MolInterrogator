@@ -36,6 +36,11 @@ def _target_id_2_card_dict(db_id=None, client=None):
                     tmp_dict['InterPro'].append(id_db)
                 except:
                     tmp_dict['InterPro']=[id_db]
+            elif src_db == 'Pfam':
+                try:
+                    tmp_dict['Pfam'].append(id_db)
+                except:
+                    tmp_dict['Pfam']=[id_db]
 
         tmp_dict['BindingDB']=tmp_dict['UniProt']
 
@@ -43,12 +48,89 @@ def _target_id_2_card_dict(db_id=None, client=None):
 
         return tmp_dict
 
-def _compound_from_target_2_card_dict(compound_result=None, client=None):
+def _compound_from_target_2_card_dict(from_target_result=None, client=None):
+
+        db_id = from_target_result['molecule_chembl_id']
 
         tmp_dict = {}
-        tmp_dict['Name'] = compound_result['molecule_pref_name']
-        tmp_dict['Smile'] = compound_result['canonical_smiles']
-        tmp_dict['Compound ChemBL'] = compound_result['molecule_chembl_id']
+
+        molecule_result = client.molecule.filter(molecule_chembl_id__in=db_id)[0]
+        tmp_dict['Name'] = molecule_result['pref_name']
+        for ii in molecule_result['molecule_synonyms']:
+            if ii['syn_type']=='FDA':
+                tmp_dict['FDA Name']=ii['molecule_synonym']
+            elif ii['syn_type']=='TRADE NAME':
+                tmp_dict['Trade Name']=ii['molecule_synonym']
+            else:
+                try:
+                    tmp_dict['Alternative Name'].append(ii['molecule_synonym'])
+                except:
+                    tmp_dict['Alternative Name']=[ii['molecule_synonym']]
+
+        tmp_dict['Natural']=molecule_result['natural_product']
+
+        tmp_dict['Smile'] = molecule_result['molecule_structures']['canonical_smiles']
+        tmp_dict['InChi'] = molecule_result['molecule_structures']['standard_inchi']
+        tmp_dict['InChi Key'] = molecule_result['molecule_structures']['standard_inchi_key']
+        tmp_dict['ChemBL'] = molecule_result['molecule_chembl_id']
+        tmp_dict['Max Phase'] = molecule_result['max_phase']
+        tmp_dict['Type'] = molecule_result['molecule_type']
+        tmp_dict['Chirality'] = molecule_result['chirality']
+        tmp_dict['ACD LogD'] = molecule_result['molecule_properties']['acd_logd']
+        tmp_dict['ACD LogP'] = molecule_result['molecule_properties']['acd_logP']
+        tmp_dict['ACD Acidic pKa'] = molecule_result['molecule_properties']['acd_most_apka']
+        tmp_dict['ACD Basic pKa'] = molecule_result['molecule_properties']['acd_most_bpka']
+        tmp_dict['ALogP'] = molecule_result['molecule_properties']['alogp']
+        tmp_dict['Aromatic Rings'] = molecule_result['molecule_properties']['aromatic_rings']
+        tmp_dict['Molecular Formula'] = molecule_result['molecule_properties']['full_molformula']
+        tmp_dict['Molecular Weight'] = molecule_result['molecule_properties']['full_mwt']
+        tmp_dict['HBA'] = molecule_result['molecule_properties']['hba']
+        tmp_dict['HBD'] = molecule_result['molecule_properties']['hbd']
+        tmp_dict['HBA (Lipinski)'] = molecule_result['molecule_properties']['hba_lipinski']
+        tmp_dict['HBD (Lipinski)'] = molecule_result['molecule_properties']['hbd_lipinski']
+        tmp_dict['Heavy Atoms'] = molecule_result['molecule_properties']['heavy_atoms']
+        tmp_dict['Molecular Species'] = molecule_result['molecule_properties']['molecular_species']
+        tmp_dict['Molecular Weight Monoisotopic'] =molecule_result['molecule_properties']['mw_monoisotopic']
+        tmp_dict['Rule of 5 Violations']=molecule_result['molecule_properties']['num_ro5_violations']
+        tmp_dict['Rule of 5 Violations (Lipinski)']=molecule_result['molecule_properties']['num_lipinski_ro5_violations']
+        tmp_dict['Polar Surface Area']=molecule_result['molecule_properties']['psa']
+        tmp_dict['QED Weighted']=molecule_result['molecule_properties']['qed_weighted']
+        tmp_dict['Rotatable Bonds']=molecule_result['molecule_properties']['rtb']
+
+        import urllib
+        url = 'https://www.ebi.ac.uk/unichem/rest/verbose_inchikey/'+tmp_dict['InChi Key']
+        request = urllib.request.Request(url)
+        response = urllib.request.urlopen(request)
+        unichem_result = eval(response.read())
+        for ii in unichem_result:
+            if ii['name']=='drugbank':
+                tmp_dict['DrugBank']=ii['src_compound_id']
+            if ii['name']=='gtpdb':
+                tmp_dict['Guide to Pharmacology']=ii['src_compound_id']
+            if ii['name']=='zinc':
+                tmp_dict['ZINC']=ii['src_compound_id']
+            if ii['name']=='surechembl':
+                tmp_dict['SureChEMBL']=ii['src_compound_id']
+            if ii['name']=='surechembl':
+                tmp_dict['SureChEMBL']=ii['src_compound_id']
+            if ii['name']=='pubchem_tpharma':
+                tmp_dict['PubChem Thomson Pharma']=ii['src_compound_id']
+            if ii['name']=='pubchem':
+                tmp_dict['PubChem']=ii['src_compound_id']
+            if ii['name']=='lincs':
+                tmp_dict['LINCS']=ii['src_compound_id']
+            if ii['name']=='nikkaji':
+                tmp_dict['Nikkaji']=ii['src_compound_id']
+            if ii['name']=='bindingdb':
+                tmp_dict['BindingDB']=ii['src_compound_id']
+            if ii['name']=='comptox':
+                tmp_dict['EPA Comptox']=ii['src_compound_id']
+            if ii['name']=='drugcentral':
+                tmp_dict['Drug Central']=ii['src_compound_id']
+
+        del(urllib, request, response, unichem_result)
+
+        tmp_dict['Compound ChemBL'] = molecule_result['molecule_chembl_id']
         tmp_dict['Assay ChemBL'] = compound_result['assay_chembl_id']
         tmp_dict['Document ChemBL'] = compound_result['document_chembl_id']
 

@@ -5,9 +5,54 @@ _target_df   = _pd_DataFrame( columns=['Name', 'Full Name', 'Short Name', 'Alter
                                        'BioGRID', 'ProteinModelPortal', 'Swiss-Model',
                                        'DIP', 'ELM', 'MINT', 'PDB', 'InterPro', 'Pfam', 'ProDom',
                                        'SUPFAM', 'Mutagenesis'])
-_compound_df = _pd_DataFrame(columns=[])
-_compound_from_target_df   = _pd_DataFrame(columns=['Name', 'Smile', 'Compound ChemBL', 'Assay ChemBL',
-                                      'Document ChemBL','IC50'])
+
+_compound_df = _pd_DataFrame(columns=['Name',
+                                      'Alternative Name',
+                                      'FDA Name',
+                                      'FDA UNII',
+                                      'Trade Name',
+                                      'PubChem',
+                                      'Type',
+                                      'Max Phase',
+                                      'Smile',
+                                      'InChi',
+                                      'InChi Key',
+                                      'ChEMBL',
+                                      'DrugBank',
+                                      'Guide to Pharmacology',
+                                      'ZINC',
+                                      'SureChEMBL',
+                                      'PubChem Thomson Pharma',
+                                      'LINCS',
+                                      'Nikkaji',
+                                      'BindingDB',
+                                      'EPA Comptox',
+                                      'Drug Central',
+                                      'Molecular Formula',
+                                      'Natural',
+                                      'Chirality',
+                                      'ACD LogP',
+                                      'ACD LogD',
+                                      'ACD Acidic pKa',
+                                      'ACD Basic pKa',
+                                      'ALogP',
+                                      'Aromatic Rings',
+                                      'Molecular Weight',
+                                      'HBA',
+                                      'HBD',
+                                      'HBA (Lipinski)',
+                                      'HBD (Lipinski)',
+                                      'Heavy Atoms',
+                                      'Molecular Species',
+                                      'Molecular Weight Monoisotopic',
+                                      'Rule of 5 Violations',
+                                      'Rule of 5 Violations (Lipinski)',
+                                      'Polar Surface Area',
+                                      'QED Weighted',
+                                      'Rotatable Bonds'
+                                     ])
+
+_compound_from_target_df = _pd_DataFrame(columns=list(_compound_df.columns)+['Assay ChEMBL', 'Document ChEMBL', 'IC50'])
 
 _dbs_multi=['ChEMBL','UniProt']
 _dbs_models=['ProteinModelPortal', 'Swiss-Model']
@@ -19,6 +64,8 @@ _dbs_posttrans_mod=[]
 _dbs_domains=['InterPro', 'Pfam', 'ProDom', 'SUPFAM']
 _dbs_similarities=[]
 _dbs_regions=[]
+
+# PDB, PDBe, CREDO, PDBsuf
 
 # Binding Sites or Poses
 # Clefts, pores, pockets, ...
