@@ -104,9 +104,11 @@ class _target_query():
         self.string = query
         self.query = None
         self.card = _target_df.copy()
+        self.compounds = _compound_from_target_df.copy()
 
-        self.run_query()
-        #self.update_results(index_result=0)
+        if query is not None:
+            self.run_query()
+            #self.update_results(index_result=0)
 
     def run_query(self):
 

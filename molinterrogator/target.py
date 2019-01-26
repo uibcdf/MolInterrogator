@@ -1,10 +1,29 @@
 from pandas import DataFrame as _pd_DataFrame
 
-_target_df   = _pd_DataFrame( columns=['Name', 'Full Name', 'Short Name', 'Alternative Name', 'Type', 'Organism',
-                                       'Host', 'Function', 'ChEMBL', 'UniProt', 'BindingDB', 'IntAct',
-                                       'BioGRID', 'ProteinModelPortal', 'Swiss-Model',
-                                       'DIP', 'ELM', 'MINT', 'PDB', 'InterPro', 'Pfam', 'ProDom',
-                                       'SUPFAM', 'Mutagenesis'])
+_target_df   = _pd_DataFrame( columns=['Name',
+                                       'Full Name',
+                                       'Short Name',
+                                       'Alternative Name',
+                                       'Type',
+                                       'Organism',
+                                       'Host',
+                                       'Function',
+                                       'ChEMBL',
+                                       'UniProt',
+                                       'BindingDB',
+                                       'IntAct',
+                                       'BioGRID',
+                                       'ProteinModelPortal',
+                                       'Swiss-Model',
+                                       'DIP',
+                                       'ELM',
+                                       'MINT',
+                                       'PDB',
+                                       'InterPro',
+                                       'Pfam',
+                                       'ProDom',
+                                       'SUPFAM',
+                                       'Mutagenesis'])
 
 _compound_df = _pd_DataFrame(columns=['Name',
                                       'Alternative Name',
@@ -52,7 +71,13 @@ _compound_df = _pd_DataFrame(columns=['Name',
                                       'Rotatable Bonds'
                                      ])
 
-_compound_from_target_df = _pd_DataFrame(columns=list(_compound_df.columns)+['Assay ChEMBL', 'Document ChEMBL', 'IC50'])
+_compound_from_target_df = _pd_DataFrame(columns=list(_compound_df.columns)+['Assay ChEMBL',
+                                                                             'Document ChEMBL',
+                                                                             'IC50',
+                                                                             'BEI',
+                                                                             'LE',
+                                                                             'LLE',
+                                                                             'SEI'])
 
 _dbs_multi=['ChEMBL','UniProt']
 _dbs_models=['ProteinModelPortal', 'Swiss-Model']
@@ -78,7 +103,9 @@ class Target():
         from .DBs.UniProt import _target_query as _target_uniprot_query
         from .DBs.BindingDB import _target_query as _target_bindingdb_query
 
-        self._query_string = query
+        self.type = 'Target'
+        self.card = _target_df.copy()
+        self.query = query
         self._chembl = None
         self._uniprot = None
         self._bindingdb = None
@@ -108,9 +135,7 @@ class Target():
 
         # DBs Models
 
-        self.card = _target_df.copy()
-
-        if verbose:
+        if verbose and (query is not None):
             if len(self._chembl.query) > 1:
                 print('ChEMBL with', len(self._chembl.query),'targets matching the query. (See xxx to \
                     refine the result)')
@@ -140,5 +165,31 @@ class Target():
             self._chembl._update_results(index_result)
 
         pass
+
+    def make_Notebook(self,output='target.ipynb',json_file=None):
+
+        from .reporter import make_Notebook as _make_Notebook
+
+        if json_file is None:
+            json_file=output.split('.')[0]+'.json'
+
+        self.dump(json_file)
+        _make_Notebook(self,output,json_file)
+
+    def dump(self,json_file=None):
+
+        import json
+
+        json_list = []
+        json_list.append(json.dumps('Target'))
+        json_list.append(self.card.to_json(orient='table'))
+        json_list.append(self._chembl.card.to_json(orient='table'))
+        json_list.append(self._chembl.compounds.to_json(orient='table'))
+        json_list.append(self._uniprot.card.to_json(orient='table'))
+        json_list.append(self._uniprot.compounds.to_json(orient='table'))
+
+
+        with open(json_file, 'w') as outfile:
+            json.dump(json_list, outfile)
 
 

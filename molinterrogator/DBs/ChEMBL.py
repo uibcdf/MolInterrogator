@@ -72,12 +72,12 @@ def _compound_from_target_2_card_dict(from_target_result=None, client=None):
         tmp_dict['Smile'] = molecule_result['molecule_structures']['canonical_smiles']
         tmp_dict['InChi'] = molecule_result['molecule_structures']['standard_inchi']
         tmp_dict['InChi Key'] = molecule_result['molecule_structures']['standard_inchi_key']
-        tmp_dict['ChemBL'] = molecule_result['molecule_chembl_id']
+        tmp_dict['ChEMBL'] = molecule_result['molecule_chembl_id']
         tmp_dict['Max Phase'] = molecule_result['max_phase']
         tmp_dict['Type'] = molecule_result['molecule_type']
         tmp_dict['Chirality'] = molecule_result['chirality']
         tmp_dict['ACD LogD'] = molecule_result['molecule_properties']['acd_logd']
-        tmp_dict['ACD LogP'] = molecule_result['molecule_properties']['acd_logP']
+        tmp_dict['ACD LogP'] = molecule_result['molecule_properties']['acd_logp']
         tmp_dict['ACD Acidic pKa'] = molecule_result['molecule_properties']['acd_most_apka']
         tmp_dict['ACD Basic pKa'] = molecule_result['molecule_properties']['acd_most_bpka']
         tmp_dict['ALogP'] = molecule_result['molecule_properties']['alogp']
@@ -130,14 +130,18 @@ def _compound_from_target_2_card_dict(from_target_result=None, client=None):
 
         del(urllib, request, response, unichem_result)
 
-        tmp_dict['Compound ChemBL'] = molecule_result['molecule_chembl_id']
-        tmp_dict['Assay ChemBL'] = compound_result['assay_chembl_id']
-        tmp_dict['Document ChemBL'] = compound_result['document_chembl_id']
+        tmp_dict['Assay ChEMBL'] =    from_target_result['assay_chembl_id']
+        tmp_dict['Document ChEMBL'] = from_target_result['document_chembl_id']
+        if from_target_result['ligand_efficiency'] is not None:
+            tmp_dict['BEI'] = from_target_result['ligand_efficiency']['bei']
+            tmp_dict['LE'] =  from_target_result['ligand_efficiency']['le']
+            tmp_dict['LLE'] = from_target_result['ligand_efficiency']['lle']
+            tmp_dict['SEI'] = from_target_result['ligand_efficiency']['sei']
 
-        if compound_result['standard_type']=='IC50':
-            tmp_dict['IC50']=compound_result['standard_value']+' '+compound_result['standard_units']
+        if from_target_result['standard_type']=='IC50':
+            tmp_dict['IC50']=from_target_result['standard_value']+' '+from_target_result['standard_units']
         else:
-            print('Type of compound value not known for molecule_chembl_id:', compound_result['molecule_chembl_id'])
+            print('Type of compound value not known for molecule_chembl_id:', from_target_result['molecule_chembl_id'])
 
         return tmp_dict
 
@@ -148,9 +152,11 @@ class _target_query():
         self.string = query
         self.query = None
         self.card = _target_df.copy()
+        self.compounds = _compound_from_target_df.copy()
 
-        self.run_query()
-        self.update_results(index_result=0)
+        if query is not None:
+            self.run_query()
+            self.update_results(index_result=0)
 
     def run_query(self):
 
